@@ -6,6 +6,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Spinner;
 
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationSource;
@@ -15,6 +18,8 @@ import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
+import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.connection.ConnectionType;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -26,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationOverlay mLocationOverlay;
     private Boolean isReadyMap = false;
 
+    Button mBtnConnect;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMyDrone = new MyDrone(this);
 
         FragmentManager fm = getSupportFragmentManager();
-        MapFragment mapFragment = (MapFragment)fm.findFragmentById(R.id.map);
+        MapFragment mapFragment = (MapFragment) fm.findFragmentById(R.id.map);
         if (mapFragment == null) {
             mapFragment = MapFragment.newInstance();
             fm.beginTransaction().add(R.id.map, mapFragment).commit();
@@ -42,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         mLocationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
+
+        initView();
     }
 
     @Override
@@ -76,9 +85,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
-
-
-
     }
 
     @Override
@@ -91,5 +97,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void initView() {
+        mBtnConnect = findViewById(R.id.btnConnect);
+
+        mBtnConnect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMyDrone.isConnected()) {
+                    mMyDrone.disconnect();
+                } else {
+                    ConnectionParameter connectionParams = ConnectionParameter.newUdpConnection(null);
+                    mMyDrone.connect(connectionParams);
+                }
+            }
+        });
     }
 }

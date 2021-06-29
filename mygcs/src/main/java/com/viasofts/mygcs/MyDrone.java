@@ -15,6 +15,7 @@ import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloAttributes;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloState;
+import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
 import com.o3dr.services.android.lib.drone.property.Type;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 
@@ -33,6 +34,18 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
         mMainActivity = mainActivity;
         mControlTower = new ControlTower(mMainActivity);
         mDrone = new Drone(mMainActivity);
+    }
+
+    public Boolean isConnected() {
+        return mDrone.isConnected();
+    }
+
+    public void disconnect() {
+        mDrone.disconnect();
+    }
+
+    public void connect(ConnectionParameter connectionParameter) {
+        mDrone.connect(connectionParameter);
     }
 
     public void startDrone() {
