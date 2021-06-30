@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationSource;
@@ -32,12 +33,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Boolean isReadyMap = false;
 
     Button mBtnConnect;
+    TextView mTextViewBattery;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mMyDrone = new MyDrone(this);
+
+        MyDrone.Callback callback = new MyDrone.Callback() {
+            @Override
+            public void setBatteryValue(double batteryValue) {
+                mTextViewBattery.setText(String.valueOf(batteryValue) + 'V');
+            }
+        };
+
+        mMyDrone.setCallback(callback);
 
         FragmentManager fm = getSupportFragmentManager();
         MapFragment mapFragment = (MapFragment) fm.findFragmentById(R.id.map);
@@ -101,7 +112,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void initView() {
         mBtnConnect = findViewById(R.id.btnConnect);
-
         mBtnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,5 +123,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         });
+
+        mTextViewBattery = findViewById(R.id.textViewBattery);
     }
 }

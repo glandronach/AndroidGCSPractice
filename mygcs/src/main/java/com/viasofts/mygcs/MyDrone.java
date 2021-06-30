@@ -3,6 +3,7 @@ package com.viasofts.mygcs;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.telecom.Call;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,6 +17,8 @@ import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloAttributes;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloState;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.property.Altitude;
+import com.o3dr.services.android.lib.drone.property.Battery;
 import com.o3dr.services.android.lib.drone.property.Type;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 
@@ -26,14 +29,28 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
     private final Handler mHandler = new Handler();
     private MainActivity mMainActivity;
     private String TAG = "MyLog";
+    private boolean mCondition;
+    private Callback mCallback;
 
     private static final int DEFAULT_UDP_PORT = 14550;
     private static final int DEFAULT_USB_BAUD_RATE = 57600;
+
+    interface Callback {
+        void setBatteryValue(double batteryValue);
+    }
 
     public MyDrone(MainActivity mainActivity) {
         mMainActivity = mainActivity;
         mControlTower = new ControlTower(mMainActivity);
         mDrone = new Drone(mMainActivity);
+
+        mCondition = false;
+        mCallback = null;
+    }
+
+    public void setCallback(Callback callback) {
+        mCallback = callback;
+        mCondition = true;
     }
 
     public Boolean isConnected() {
@@ -79,7 +96,7 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
 
             case AttributeEvent.TYPE_UPDATED:
                 Type newDroneType = mDrone.getAttribute(AttributeType.TYPE);
-                if (newDroneType.getDroneType() != this.mDroneType) {
+                if (newDroneType.getDroneType() != mDroneType) {
                     mDroneType = newDroneType.getDroneType();
                 }
                 break;
@@ -94,6 +111,13 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
                 break;
 
             case AttributeEvent.HOME_UPDATED:
+                break;
+
+            case AttributeEvent.BATTERY_UPDATED:
+                if(mCondition && (mCallback != null)) {
+                    Battery droneBattery = mDrone.getAttribute(AttributeType.BATTERY);
+                     mCallback.setBatteryValue(droneBattery.getBatteryVoltage()); // 가능하면 콜백 메서드 호출
+                }
                 break;
 
             default:
@@ -125,7 +149,7 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
     @Override
     public void onTowerConnected() {
         alertUser("DroneKit-Android Connected");
-        this.mControlTower.registerDrone(mDrone, mHandler);
+        mControlTower.registerDrone(mDrone, mHandler);
         mDrone.registerDroneListener(this);
     }
 

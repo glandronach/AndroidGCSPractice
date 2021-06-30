@@ -92,14 +92,26 @@ public class WifiConnectionHandler {
                     break;
 
                 case WifiManager.NETWORK_STATE_CHANGED_ACTION:
+
                     NetworkInfo netInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+
+
+
+
                     NetworkInfo.State networkState = netInfo == null
                         ? NetworkInfo.State.DISCONNECTED
                         : netInfo.getState();
 
                     switch (networkState) {
                         case CONNECTED:
-                            final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
+                            WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+
+                            // final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
+
+
+
                             final String wifiSSID = wifiInfo.getSSID();
                             Timber.i("Connected to " + wifiSSID);
 
