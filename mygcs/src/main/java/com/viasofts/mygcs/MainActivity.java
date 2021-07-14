@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -21,6 +22,9 @@ import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
 import com.o3dr.services.android.lib.drone.connection.ConnectionType;
+import com.o3dr.services.android.lib.drone.property.VehicleMode;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -33,7 +37,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Boolean isReadyMap = false;
 
     Button mBtnConnect;
-    TextView mTextViewBattery;
+    TextView mTextViewBattery, mTextViewAltitude;
+    Spinner mModeSelector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +49,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         MyDrone.Callback callback = new MyDrone.Callback() {
             @Override
             public void setBatteryValue(double batteryValue) {
-                mTextViewBattery.setText(String.valueOf(batteryValue) + 'V');
+                mTextViewBattery.setText(String.valueOf(Math.round(batteryValue*100)/100.0) + 'V');
+            }
+
+            @Override
+            public void setAltitude(double altitude) {
+                mTextViewAltitude.setText(String.valueOf(Math.round(altitude*100)/100.0) + 'm');
+            }
+
+            @Override
+            public void setVehicleMode(List<VehicleMode> vehicleModes) {
+                ArrayAdapter<VehicleMode> vehicleModeArrayAdapter = new ArrayAdapter<VehicleMode>(MainActivity.this, android.R.layout.simple_spinner_item, vehicleModes);
+                vehicleModeArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                mModeSelector.setAdapter(vehicleModeArrayAdapter);
             }
         };
 
@@ -125,5 +142,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         mTextViewBattery = findViewById(R.id.textViewBattery);
+        mTextViewAltitude = findViewById(R.id.textViewAltitude);
+        mModeSelector = findViewById(R.id.modeSelect);
     }
 }
