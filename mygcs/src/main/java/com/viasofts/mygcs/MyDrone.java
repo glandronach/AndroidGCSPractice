@@ -6,11 +6,13 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.telecom.Call;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
+import com.o3dr.android.client.apis.VehicleApi;
 import com.o3dr.android.client.interfaces.DroneListener;
 import com.o3dr.android.client.interfaces.LinkListener;
 import com.o3dr.android.client.interfaces.TowerListener;
@@ -29,6 +31,7 @@ import com.o3dr.services.android.lib.drone.property.State;
 import com.o3dr.services.android.lib.drone.property.Type;
 import com.o3dr.services.android.lib.drone.property.VehicleMode;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
+import com.o3dr.services.android.lib.model.AbstractCommandListener;
 
 import java.util.List;
 
@@ -46,6 +49,7 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
         void setBatteryValue(double batteryValue);
         void setAltitude(double altitude);
         void setVehicleMode(List<VehicleMode> vehicleModes);
+        void editVehicleMode(VehicleMode vehicleMode);
     }
 
     public void connectTower() {
@@ -109,6 +113,8 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
                 break;
 
             case AttributeEvent.STATE_UPDATED:
+                break;
+
             case AttributeEvent.STATE_ARMING:
                 break;
 
@@ -123,9 +129,7 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
             case AttributeEvent.STATE_VEHICLE_MODE:
                 State vehicleState = mDrone.getAttribute(AttributeType.STATE);
                 VehicleMode vehicleMode = vehicleState.getVehicleMode();
-
-//                ArrayAdapter arrayAdapter = (ArrayAdapter) this.modeSelector.getAdapter();
-//                this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
+                mCallback.editVehicleMode(vehicleMode);
                 break;
 
             case AttributeEvent.SPEED_UPDATED:
@@ -197,5 +201,24 @@ public class MyDrone implements DroneListener, TowerListener, LinkListener {
     protected void updateVehicleModesForType(int droneType) {
         List<VehicleMode> vehicleModes = VehicleMode.getVehicleModePerDroneType(droneType);
         mCallback.setVehicleMode(vehicleModes);
+    }
+
+    public void onFlightModeSelected(Object vehicleMode) {
+        VehicleApi.getApi(mDrone).setVehicleMode((VehicleMode) vehicleMode, new AbstractCommandListener() {
+            @Override
+            public void onSuccess() {
+                alertUser("Vehicle mode change successful.");
+            }
+
+            @Override
+            public void onError(int executionError) {
+                alertUser("Vehicle mode change failed: " + executionError);
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("Vehicle mode change timed out.");
+            }
+        });
     }
 }

@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -62,6 +63,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 ArrayAdapter<VehicleMode> vehicleModeArrayAdapter = new ArrayAdapter<VehicleMode>(MainActivity.this, android.R.layout.simple_spinner_item, vehicleModes);
                 vehicleModeArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 mModeSelector.setAdapter(vehicleModeArrayAdapter);
+            }
+
+            @Override
+            public void editVehicleMode(VehicleMode vehicleMode) {
+                ArrayAdapter arrayAdapter = (ArrayAdapter) mModeSelector.getAdapter();
+                mModeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
             }
         };
 
@@ -143,6 +150,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mTextViewBattery = findViewById(R.id.textViewBattery);
         mTextViewAltitude = findViewById(R.id.textViewAltitude);
+
         mModeSelector = findViewById(R.id.modeSelect);
+        mModeSelector.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mMyDrone.onFlightModeSelected(mModeSelector.getSelectedItem());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
     }
 }
